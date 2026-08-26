@@ -1,0 +1,20 @@
+{
+  "name": "my-todolist-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "my-ToDoList backend (Express + pg, no ORM)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "test": "node --env-file=.env --test"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "overrides": {
+    "tar": "^7.5.22"
+  }
+}

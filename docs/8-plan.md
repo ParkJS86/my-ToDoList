@@ -7,6 +7,7 @@
 | 1.1 | 완료 조건 표시 규칙 추가(미실행 `[ ]`/정상완료 🟢/실패 🔴), DB-1 완료 항목을 🟢로 표시 | 사용자 요청 | 2026-08-26 |
 | 1.2 | DB-2 수행 완료: `my_todolist` DB 생성, 마이그레이션 3개 파일 적용, `backend/.env` 접속 문자열을 `my_todolist`로 갱신, 완료 항목 🟢 표시 | DB-2 실행 결과 | 2026-08-26 |
 | 1.3 | DB-3 수행 완료: `backend/src/migrations/seed.sql` 작성(pgcrypto bcrypt 해시, ON CONFLICT DO NOTHING), Admin 계정 1건·기본 Category 1건 생성 및 재실행 idempotency 확인, 완료 항목 🟢 표시 | DB-3 실행 결과 | 2026-08-26 |
+| 1.4 | BE-1 수행 완료: package.json/디렉토리 뼈대/.env.example 생성, npm install 성공, 검증 테스트 27건 작성 및 전체 통과(node --test 자동탐색 방식으로 test 스크립트 수정), 완료 항목 🟢 표시 | BE-1 실행 결과 | 2026-08-26 |
 
 ## 문서 개요
 - 목적: docs 1~7번 문서(도메인정의서/PRD/시나리오/와이어프레임/프로젝트원칙/아키텍처/ERD)와 `schema.sql`을 기준으로, 실제 구현 순서를 DB → Backend → Frontend 단위의 독립적인 Task로 분할한다.
@@ -48,9 +49,9 @@
 ### BE-1. 백엔드 프로젝트 초기화
 - **수행 작업**: `backend/` 디렉토리에 Node.js + Express 프로젝트 생성(`package.json`), `pg` 설치(Prisma 등 ORM 설치 금지), `5-project-principle.md` 7장 디렉토리 구조(`routes/services/queries/middlewares/db/migrations/utils/test`) 생성, `.env.example` 작성(`DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `PORT`).
 - **완료 조건**
-  - [ ] `npm install` 정상 완료, `package.json`에 `express`, `pg`, `bcrypt`, `jsonwebtoken` 등 필요한 최소 패키지만 등록되어 있다(Prisma 미포함).
-  - [ ] `5-project-principle.md` 7장과 동일한 폴더 트리가 생성되어 있다.
-  - [ ] `.env.example`이 존재하고 실제 `.env`는 `.gitignore`에 포함되어 있다.
+  - 🟢 `npm install` 정상 완료, `package.json`에 `express`, `pg`, `bcrypt`, `jsonwebtoken` 등 필요한 최소 패키지만 등록되어 있다(Prisma 미포함).
+  - 🟢 `5-project-principle.md` 7장과 동일한 폴더 트리가 생성되어 있다.
+  - 🟢 `.env.example`이 존재하고 실제 `.env`는 `.gitignore`에 포함되어 있다.
 - **선행 Task**: 없음(DB-1과 병행 가능).
 
 ### BE-2. DB 커넥션 풀 및 헬스체크
