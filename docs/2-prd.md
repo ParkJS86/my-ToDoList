@@ -7,6 +7,7 @@
 | 1.1 | 확장범위에서 소셜 로그인 제거, 회원가입 id 정책을 "이메일 형식 검증만 수행하고 실제 수신 가능 여부는 점검하지 않으며 회원 id 목록 내 중복 여부만 확인"으로 명시 | 사용자 요청 | 2026-08-26 |
 | 1.2 | 인증 방식을 JWT Access Token + Refresh Token 조합으로 확정. 4.1 스택, 5.1 기능표(토큰 재발급/로그아웃 추가), 6장 보안, 7장 Day1, 3.2 확장범위(서버측 Refresh Token 무효화)에 반영 | 사용자 요청 | 2026-08-26 |
 | 1.3 | 소셜 로그인, 이메일 인증 방식(실제 이메일 소유 확인)을 1차 MVP 범위에는 없으나 향후 확장기능으로 3.2 확장범위에 재추가, 5.1 기능표에 참조 명시 | 사용자 요청 | 2026-08-26 |
+| 1.4 | 4.1 스택에 프론트엔드 레이어 구조가 FSD(Feature-Sliced Design)임을 명시(5-project-principle.md와의 근거 연결) | 기술스택 일관성 검토 결과 | 2026-08-26 |
 
 ## 1. 문서 개요
 - 목적: 도메인 정의서(1-domain-definition.md)에 정의된 엔티티·규칙·유스케이스를 제품 관점(범위, 일정, 기술스택, 비기능요구사항)에서 구체화하여 2일 내 MVP 개발의 실행 기준을 제공한다.
@@ -46,7 +47,7 @@
 ## 4. 기술 스택 및 아키텍처 개요
 
 ### 4.1 스택
-- 프론트엔드: React 19 + TypeScript, Zustand(전역 상태: 인증/UI), TanStack Query(서버 상태: Todo/Category/User 동기화 및 캐싱)
+- 프론트엔드: React 19 + TypeScript, Zustand(전역 상태: 인증/UI), TanStack Query(서버 상태: Todo/Category/User 동기화 및 캐싱), 레이어 구조는 FSD(Feature-Sliced Design, app/pages/widgets/features/entities/shared) 적용(상세는 5-project-principle.md 참조)
 - 백엔드: Node.js + Express(JavaScript), pg(node-postgres) 직접 사용 — ORM/Prisma 미사용, SQL/쿼리빌더 직접 작성
 - DB: PostgreSQL 17
 - 인증: JWT 기반, Access Token(단기, 예: 15분) + Refresh Token(장기, 예: 7일) 조합. Access Token 만료 시 Refresh Token으로 재발급. 비밀번호는 bcrypt 해시 저장
