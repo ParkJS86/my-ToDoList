@@ -4,11 +4,15 @@
 | 버전 | 요약 내용 | 근거/출처 | 날짜 |
 |---|---|---|---|
 | 1.0 | 최초 작성: DB/백엔드/프론트엔드 Task 분할, Task별 수행작업/완료조건/선행Task 정의 | 1~7번 docs 문서 전체, schema.sql | 2026-08-26 |
+| 1.1 | 완료 조건 표시 규칙 추가(미실행 `[ ]`/정상완료 🟢/실패 🔴), DB-1 완료 항목을 🟢로 표시 | 사용자 요청 | 2026-08-26 |
+| 1.2 | DB-2 수행 완료: `my_todolist` DB 생성, 마이그레이션 3개 파일 적용, `backend/.env` 접속 문자열을 `my_todolist`로 갱신, 완료 항목 🟢 표시 | DB-2 실행 결과 | 2026-08-26 |
+| 1.3 | DB-3 수행 완료: `backend/src/migrations/seed.sql` 작성(pgcrypto bcrypt 해시, ON CONFLICT DO NOTHING), Admin 계정 1건·기본 Category 1건 생성 및 재실행 idempotency 확인, 완료 항목 🟢 표시 | DB-3 실행 결과 | 2026-08-26 |
 
 ## 문서 개요
 - 목적: docs 1~7번 문서(도메인정의서/PRD/시나리오/와이어프레임/프로젝트원칙/아키텍처/ERD)와 `schema.sql`을 기준으로, 실제 구현 순서를 DB → Backend → Frontend 단위의 독립적인 Task로 분할한다.
 - 전제: PRD(`2-prd.md`) 7장 Day1/Day2, 1인 개발, 2일 일정. 아래 Task는 그 일정 안에서 수행 가능한 최소 단위로 쪼갠 것이며, Day1=DB+Backend 중심, Day2=Frontend+통합 중심으로 대응된다.
 - Task ID 규칙: `DB-n`(데이터베이스), `BE-n`(백엔드), `FE-n`(프론트엔드). 선행 Task가 모두 완료되어야 해당 Task를 시작할 수 있다.
+- 완료 조건 표시 규칙: 미실행 `- [ ]` / 정상 완료 🟢 / 실패 🔴.
 
 ---
 
@@ -17,24 +21,24 @@
 ### DB-1. 마이그레이션 스크립트 정리
 - **수행 작업**: `docs/schema.sql`을 `backend/src/migrations/` 하위에 순번 파일로 분리한다(`001_create_users.sql`, `002_create_categories.sql`, `003_create_todos.sql`, 인덱스/유니크 인덱스는 각 테이블 생성 파일에 포함). `5-project-principle.md` 7장 백엔드 디렉토리 구조를 따른다.
 - **완료 조건**
-  - [ ] `001_create_users.sql` ~ `003_create_todos.sql` 3개 파일이 순서대로 존재한다.
-  - [ ] 각 파일을 순서대로 실행했을 때 오류 없이 `users`/`categories`/`todos` 3개 테이블과 관련 인덱스(`categories_single_default_idx`, `todos_user_id_idx`, `todos_category_id_idx`)가 생성된다.
-  - [ ] 컬럼명/타입/제약조건이 `7-erd.md`(v1.2, updated_by/updated_at 포함) 및 `schema.sql`과 100% 일치한다.
+  - 🟢 `001_create_users.sql` ~ `003_create_todos.sql` 3개 파일이 순서대로 존재한다.
+  - 🟢 각 파일을 순서대로 실행했을 때 오류 없이 `users`/`categories`/`todos` 3개 테이블과 관련 인덱스(`categories_single_default_idx`, `todos_user_id_idx`, `todos_category_id_idx`)가 생성된다.
+  - 🟢 컬럼명/타입/제약조건이 `7-erd.md`(v1.2, updated_by/updated_at 포함) 및 `schema.sql`과 100% 일치한다.
 - **선행 Task**: 없음(최초 시작 Task).
 
 ### DB-2. 로컬 개발 DB 인스턴스 준비
 - **수행 작업**: PostgreSQL 17 로컬 인스턴스(또는 Docker 컨테이너) 기동, `my_todolist` 데이터베이스 생성, DB-1의 마이그레이션 3개 파일을 순서대로 적용.
 - **완료 조건**
-  - [ ] `psql`로 접속해 `\dt` 실행 시 `users`, `categories`, `todos` 3개 테이블이 조회된다.
-  - [ ] `DATABASE_URL` 형식의 접속 문자열이 확정되어 있다(예: `postgres://user:pass@localhost:5432/my_todolist`).
+  - 🟢 `psql`로 접속해 `\dt` 실행 시 `users`, `categories`, `todos` 3개 테이블이 조회된다.
+  - 🟢 `DATABASE_URL` 형식의 접속 문자열이 확정되어 있다(예: `postgres://user:pass@localhost:5432/my_todolist`).
 - **선행 Task**: DB-1.
 
 ### DB-3. 시드 데이터 작성
 - **수행 작업**: 최초 관리자 계정 1건(role=Admin, bcrypt 해시된 비밀번호)과 전역 '기본' Category 1건(`is_default=true`)을 삽입하는 시드 SQL(`seed.sql`) 작성 및 실행. 도메인 정의서 6장 규칙5(기본 Category 1개) 충족 확인.
 - **완료 조건**
-  - [ ] `categories` 테이블에 `is_default=true`인 행이 정확히 1건 존재한다.
-  - [ ] `users` 테이블에 role=Admin인 계정이 최소 1건 존재하고, 해당 비밀번호로 로그인 가능함을 SQL 조회로 확인했다(비밀번호 해시 값 존재 확인).
-  - [ ] 동일 시드 스크립트를 재실행해도 중복 삽입 없이 안전하게 동작한다(`ON CONFLICT DO NOTHING` 등).
+  - 🟢 `categories` 테이블에 `is_default=true`인 행이 정확히 1건 존재한다.
+  - 🟢 `users` 테이블에 role=Admin인 계정이 최소 1건 존재하고, 해당 비밀번호로 로그인 가능함을 SQL 조회로 확인했다(비밀번호 해시 값 존재 확인).
+  - 🟢 동일 시드 스크립트를 재실행해도 중복 삽입 없이 안전하게 동작한다(`ON CONFLICT DO NOTHING` 등).
 - **선행 Task**: DB-2.
 
 ---
