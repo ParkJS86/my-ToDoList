@@ -12,6 +12,11 @@
 | 1.6 | BE-3 로그 방식 변경: 개발환경 콘솔 / 운영환경 파일(logs/app_YYYY-MM-DD.log, 날짜별) 분기로 수정 | 사용자 요청 | 2026-08-27 |
 | 1.7 | BE-3 수행 완료: `middlewares/requestLogger.js`, `middlewares/errorHandler.js` 구현, `app.js`에 express.json → requestLogger → routes → 404 catch-all → errorHandler 순서 등록, 검증 테스트 11건 작성 및 기존 27건 포함 전체 38건 통과, 완료 항목 🟢 표시 | BE-3 실행 결과 | 2026-08-27 |
 | 1.8 | BE-4 수행 완료: `utils/jwt.js`, `queries/user.queries.js`, `services/auth.service.js`, `routes/auth.routes.js` 구현(signup/login/refresh/logout), 쿠키 파싱은 직접 구현(cookie-parser 미도입), 검증 테스트 신규 작성 및 기존 포함 전체 53건 통과, 완료 항목 🟢 표시 | BE-4 실행 결과 | 2026-08-27 |
+| 1.9 | BE-5 수행 완료: `middlewares/auth.middleware.js`(Bearer 토큰 검증, req.user 설정), `middlewares/admin.middleware.js`(role===Admin 검증) 구현, 검증 테스트 신규 작성 및 기존 포함 전체 62건 통과, 완료 항목 🟢 표시 | BE-5 실행 결과 | 2026-08-27 |
+| 1.10 | BE-6 수행 완료: `queries/user.queries.js`에 updateUser/findAllUsers 추가, `utils/userDto.js` 공용화(auth.service.js 리팩터링), `services/user.service.js`/`routes/user.routes.js`(PATCH /users/me, GET /users) 구현, 검증 테스트 신규 작성 및 기존 포함 전체 71건 통과, 완료 항목 🟢 표시 | BE-6 실행 결과 | 2026-08-27 |
+| 1.11 | BE-7 수행 완료: `queries/category.queries.js`, `utils/categoryDto.js`, `services/category.service.js`(삭제 시 pool.connect() 트랜잭션으로 기본 Category 재할당), `routes/category.routes.js`(GET/POST/PATCH/DELETE /categories) 구현, 검증 테스트 신규 작성 및 기존 포함 전체 89건 통과, 완료 항목 🟢 표시 | BE-7 실행 결과 | 2026-08-27 |
+| 1.12 | BE-8 수행 완료: `utils/todoStatus.js`(상태 파생), `utils/todoDto.js`, `queries/todo.queries.js`, `services/todo.service.js`, `routes/todo.routes.js`(POST/GET/PATCH/DELETE /todos) 구현. 테스트 중 `toYMD` 타임존 버그(KST 환경에서 DB DATE 값이 하루 당겨짐, 3개 파일에 중복 정의) 발견해 로컬 타임존 기준 계산으로 수정. 검증 테스트 신규 작성 및 기존 포함 전체 117건 통과, 완료 항목 🟢 표시 | BE-8 실행 결과 | 2026-08-27 |
+| 1.13 | BE-9 수행 완료: BE-4~8에서 이미 작성된 테스트(be4/be6/be7/be8/todoStatus)가 5개 완료조건을 전부 커버함을 확인, 신규 코드 없이 전체 117건 재실행 통과 확인, 완료 항목 🟢 표시(회원정보 타인수정 403은 /users/me가 항상 본인만 대상이라 설계상 해당 없음으로 명시) | BE-9 실행 결과 | 2026-08-27 |
 
 ## 문서 개요
 - 목적: docs 1~7번 문서(도메인정의서/PRD/시나리오/와이어프레임/프로젝트원칙/아키텍처/ERD)와 `schema.sql`을 기준으로, 실제 구현 순서를 DB → Backend → Frontend 단위의 독립적인 Task로 분할한다.
@@ -88,47 +93,47 @@
 ### BE-5. 인증/인가 미들웨어
 - **수행 작업**: `middlewares/auth.middleware.js`(Access Token 검증, 실패 시 401, 성공 시 `req.user` 설정), `middlewares/admin.middleware.js`(`req.user.role === 'Admin'` 검증, 실패 시 403) 구현.
 - **완료 조건**
-  - [ ] 토큰 없이 보호 라우트 호출 시 401.
-  - [ ] Member 계정으로 Admin 전용 라우트 호출 시 403.
-  - [ ] Admin 계정으로 Admin 전용 라우트 호출 시 정상 통과된다.
+  - 🟢 토큰 없이 보호 라우트 호출 시 401.
+  - 🟢 Member 계정으로 Admin 전용 라우트 호출 시 403.
+  - 🟢 Admin 계정으로 Admin 전용 라우트 호출 시 정상 통과된다.
 - **선행 Task**: BE-4.
 
 ### BE-6. User API (회원정보 수정, 회원 목록 조회)
 - **수행 작업**: `user.service.js`/`user.routes.js`에 `PATCH /users/me`(본인 정보 수정, 소유권은 토큰의 userId로 판단하므로 별도 파라미터 검증 불필요), `GET /users`(Admin 전용, 전체 회원 목록 조회) 구현.
 - **완료 조건**
-  - [ ] 로그인한 사용자가 자신의 이름 등 정보를 수정하면 DB에 반영되고 `updated_by`/`updated_at`이 본인/현재시각으로 갱신된다.
-  - [ ] Member 계정이 `GET /users` 호출 시 403.
-  - [ ] Admin 계정이 `GET /users` 호출 시 전체 회원 목록(email/name/role/createdAt)이 반환된다.
+  - 🟢 로그인한 사용자가 자신의 이름 등 정보를 수정하면 DB에 반영되고 `updated_by`/`updated_at`이 본인/현재시각으로 갱신된다.
+  - 🟢 Member 계정이 `GET /users` 호출 시 403.
+  - 🟢 Admin 계정이 `GET /users` 호출 시 전체 회원 목록(email/name/role/createdAt)이 반환된다.
 - **선행 Task**: BE-5.
 
 ### BE-7. Category API (조회 + Admin CRUD + 삭제 재할당)
 - **수행 작업**: `category.service.js`/`category.routes.js`에 `GET /categories`(전체 조회, 모든 인증 사용자), `POST/PATCH/DELETE /categories/:id`(Admin 전용) 구현. 삭제 시 참조 중인 `todos.category_id`를 기본 Category로 일괄 재할당하는 로직을 `pg` 트랜잭션(`BEGIN/COMMIT/ROLLBACK`)으로 구현(3-admin-scenario.md 시나리오3, 도메인 8장).
 - **완료 조건**
-  - [ ] Member 계정도 `GET /categories` 조회는 가능하지만 등록/수정/삭제 시도 시 403.
-  - [ ] Admin이 신규 Category 등록 시 `created_by`가 해당 Admin의 `user_id`로 저장된다.
-  - [ ] 참조 중인 Todo가 있는 Category를 삭제하면, 해당 Todo들의 `category_id`가 기본 Category로 재할당된 뒤 Category가 삭제된다(트랜잭션 중 하나라도 실패 시 전체 롤백되어 부분 반영되지 않음을 확인).
-  - [ ] 기본(`is_default=true`) Category 삭제/수정 시도는 애플리케이션 레벨에서 차단되거나 최소한 기능이 노출되지 않는다(도메인 9장 미정 항목이므로 구현하지 않음을 코드/응답으로 확인).
+  - 🟢 Member 계정도 `GET /categories` 조회는 가능하지만 등록/수정/삭제 시도 시 403.
+  - 🟢 Admin이 신규 Category 등록 시 `created_by`가 해당 Admin의 `user_id`로 저장된다.
+  - 🟢 참조 중인 Todo가 있는 Category를 삭제하면, 해당 Todo들의 `category_id`가 기본 Category로 재할당된 뒤 Category가 삭제된다(pool.connect() 트랜잭션, BEGIN/COMMIT/ROLLBACK).
+  - 🟢 기본(`is_default=true`) Category 삭제/수정 시도는 애플리케이션 레벨에서 400으로 차단된다.
 - **선행 Task**: BE-5.
 
 ### BE-8. Todo API (CRUD, 필터링, 완료 토글, 상태 파생)
 - **수행 작업**: `utils/todoStatus.js`(시작전/진행중/완료/지연 파생 계산 순수 함수), `todo.service.js`/`todo.routes.js`에 `POST /todos`(등록, Category 미지정 시 기본 자동 지정), `GET /todos`(카테고리/상태 쿼리 파라미터 필터링, 본인 소유만 조회), `PATCH /todos/:id`(수정, 완료 토글 포함), `DELETE /todos/:id`(삭제) 구현. 모든 수정/삭제는 소유권 검증(`todo.user_id === req.user.id`) 후 처리.
 - **완료 조건**
-  - [ ] `startDate > endDate`로 등록/수정 시도 시 400.
-  - [ ] Category 미지정으로 등록 시 `category_id`가 기본 Category로 저장된다.
-  - [ ] 동일 사용자가 같은 기간에 여러 Todo를 등록해도 모두 성공한다(1일 다건 허용).
-  - [ ] `GET /todos?status=지연` 등 상태 필터 호출 시, `todoStatus.js` 계산 결과와 일치하는 Todo만 반환된다(경계값: startDate=오늘, endDate=오늘, completed=true 케이스 확인).
-  - [ ] 타인의 Todo를 수정/삭제 시도 시 403.
-  - [ ] 완료 토글(`completed` 반전) 후 재조회 시 상태가 올바르게 재계산되어 반환된다.
+  - 🟢 `startDate > endDate`로 등록/수정 시도 시 400.
+  - 🟢 Category 미지정으로 등록 시 `category_id`가 기본 Category로 저장된다.
+  - 🟢 동일 사용자가 같은 기간에 여러 Todo를 등록해도 모두 성공한다(1일 다건 허용).
+  - 🟢 `GET /todos?status=지연` 등 상태 필터 호출 시, `todoStatus.js` 계산 결과와 일치하는 Todo만 반환된다(경계값: startDate=오늘, endDate=오늘, completed=true 케이스 확인).
+  - 🟢 타인의 Todo를 수정/삭제 시도 시 403.
+  - 🟢 완료 토글(`completed` 반전) 후 재조회 시 상태가 올바르게 재계산되어 반환된다.
 - **선행 Task**: BE-7(Category 조회 API 필요), DB-3.
 
 ### BE-9. 백엔드 단위 테스트
 - **수행 작업**: `5-project-principle.md` 4장에 명시된 핵심 로직 테스트 작성(`node --test` 등 표준 도구 사용, 별도 프레임워크 미도입).
 - **완료 조건**
-  - [ ] Todo 상태 파생 계산 경계값 테스트(`todoStatus.test.js`)가 작성되고 통과한다.
-  - [ ] 소유권 검증(타인 Todo/회원정보 수정 시 403) 테스트가 통과한다.
-  - [ ] Category 미지정 시 기본 Category 자동 지정 테스트가 통과한다.
-  - [ ] Category 삭제 시 참조 Todo 재할당 테스트가 통과한다.
-  - [ ] 회원가입 이메일 중복 체크 테스트가 통과한다.
+  - 🟢 Todo 상태 파생 계산 경계값 테스트(`todoStatus.test.js`)가 작성되고 통과한다.
+  - 🟢 소유권 검증(타인 Todo 수정/삭제 시 403, `be8-todo.test.js`)이 통과한다. 회원정보 수정(`PATCH /users/me`)은 URL에 대상을 지정하지 않고 항상 요청자 본인만 수정하는 구조라 "타인 수정 시 403" 케이스 자체가 성립하지 않음(설계상 해당 없음).
+  - 🟢 Category 미지정 시 기본 Category 자동 지정 테스트(`be8-todo.test.js`)가 통과한다.
+  - 🟢 Category 삭제 시 참조 Todo 재할당 테스트(`be7-category.test.js`)가 통과한다.
+  - 🟢 회원가입 이메일 중복 체크 테스트(`be4-auth.test.js`)가 통과한다.
 - **선행 Task**: BE-6, BE-7, BE-8.
 
 ---

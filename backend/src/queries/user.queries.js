@@ -27,4 +27,27 @@ async function findUserById(userId) {
   return result.rows[0];
 }
 
-module.exports = { findUserByEmail, createUser, findUserById };
+// returns: { user_id, email, name, role, created_at, updated_at }
+async function updateUser(userId, { name, passwordHash }) {
+  const result = await pool.query(
+    `UPDATE users
+     SET name = COALESCE($2, name),
+         password_hash = COALESCE($3, password_hash),
+         updated_by = $1,
+         updated_at = now()
+     WHERE user_id = $1
+     RETURNING user_id, email, name, role, created_at, updated_at`,
+    [userId, name ?? null, passwordHash ?? null]
+  );
+  return result.rows[0];
+}
+
+// returns: [{ user_id, email, name, role, created_at, updated_at }, ...]
+async function findAllUsers() {
+  const result = await pool.query(
+    'SELECT user_id, email, name, role, created_at, updated_at FROM users ORDER BY created_at ASC'
+  );
+  return result.rows;
+}
+
+module.exports = { findUserByEmail, createUser, findUserById, updateUser, findAllUsers };

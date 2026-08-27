@@ -3,12 +3,18 @@ const pool = require('./db/pool');
 const requestLogger = require('./middlewares/requestLogger');
 const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const categoryRoutes = require('./routes/category.routes');
+const todoRoutes = require('./routes/todo.routes');
 
 const app = express();
 
 app.use(express.json());
 app.use(requestLogger);
 app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/todos', todoRoutes);
 
 app.get('/health', async (req, res) => {
   try {

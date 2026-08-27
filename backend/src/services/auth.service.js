@@ -1,17 +1,7 @@
 const bcrypt = require('bcrypt');
 const { findUserByEmail, createUser, findUserById } = require('../queries/user.queries');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
-
-function toUserDto(row) {
-  return {
-    userId: row.user_id,
-    email: row.email,
-    name: row.name,
-    role: row.role,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
+const { toUserDto } = require('../utils/userDto');
 
 async function signup({ email, password, name }) {
   const existing = await findUserByEmail(email);
