@@ -1,5 +1,6 @@
 const express = require('express');
 const pool = require('./db/pool');
+const cors = require('./middlewares/cors');
 const requestLogger = require('./middlewares/requestLogger');
 const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/auth.routes');
@@ -9,12 +10,19 @@ const todoRoutes = require('./routes/todo.routes');
 
 const app = express();
 
+app.use(cors);
 app.use(express.json());
 app.use(requestLogger);
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/todos', todoRoutes);
+
+if (process.env.NODE_ENV !== 'production') {
+  const swaggerUi = require('swagger-ui-express');
+  const swaggerDocument = require('../swagger.json');
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+}
 
 app.get('/health', async (req, res) => {
   try {

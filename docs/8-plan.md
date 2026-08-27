@@ -40,7 +40,7 @@
 - **수행 작업**: PostgreSQL 17 로컬 인스턴스(또는 Docker 컨테이너) 기동, `my_todolist` 데이터베이스 생성, DB-1의 마이그레이션 3개 파일을 순서대로 적용.
 - **완료 조건**
   - 🟢 `psql`로 접속해 `\dt` 실행 시 `users`, `categories`, `todos` 3개 테이블이 조회된다.
-  - 🟢 `DATABASE_URL` 형식의 접속 문자열이 확정되어 있다(예: `postgres://user:pass@localhost:5432/my_todolist`).
+  - 🟢 `POSTGRES_CONNECTION_STRING` 형식의 접속 문자열이 확정되어 있다(예: `postgresql://user:pass@localhost:5432/my_todolist`).
 - **선행 Task**: DB-1.
 
 ### DB-3. 시드 데이터 작성
@@ -56,7 +56,7 @@
 ## 2. Backend Task
 
 ### BE-1. 백엔드 프로젝트 초기화
-- **수행 작업**: `backend/` 디렉토리에 Node.js + Express 프로젝트 생성(`package.json`), `pg` 설치(Prisma 등 ORM 설치 금지), `5-project-principle.md` 7장 디렉토리 구조(`routes/services/queries/middlewares/db/migrations/utils/test`) 생성, `.env.example` 작성(`DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `PORT`).
+- **수행 작업**: `backend/` 디렉토리에 Node.js + Express 프로젝트 생성(`package.json`), `pg` 설치(Prisma 등 ORM 설치 금지), `5-project-principle.md` 7장 디렉토리 구조(`routes/services/queries/middlewares/db/migrations/utils/test`) 생성, `.env.example` 작성(`POSTGRES_CONNECTION_STRING`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `PORT`, `CORS_ORIGIN`).
 - **완료 조건**
   - 🟢 `npm install` 정상 완료, `package.json`에 `express`, `pg`, `bcrypt`, `jsonwebtoken` 등 필요한 최소 패키지만 등록되어 있다(Prisma 미포함).
   - 🟢 `5-project-principle.md` 7장과 동일한 폴더 트리가 생성되어 있다.

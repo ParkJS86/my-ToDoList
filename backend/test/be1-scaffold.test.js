@@ -37,11 +37,11 @@ test('package.json.scripts.test is "node --env-file=.env --test"', () => {
   assert.strictEqual(pkg.scripts && pkg.scripts.test, 'node --env-file=.env --test');
 });
 
-test('package.json.dependencies key set is exactly {express, pg, bcrypt, jsonwebtoken}', () => {
+test('package.json.dependencies key set is exactly {express, pg, bcrypt, jsonwebtoken, swagger-ui-express}', () => {
   const pkg = readPkg();
   const deps = pkg.dependencies || {};
   const keys = Object.keys(deps).sort();
-  assert.deepStrictEqual(keys, ['bcrypt', 'express', 'jsonwebtoken', 'pg']);
+  assert.deepStrictEqual(keys, ['bcrypt', 'express', 'jsonwebtoken', 'pg', 'swagger-ui-express']);
 });
 
 test('package.json.dependencies does not include prisma or @prisma/client', () => {

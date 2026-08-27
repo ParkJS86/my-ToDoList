@@ -18,7 +18,7 @@
 1인 개발자가 2일 안에 MVP를 완성해야 하므로, 아래 원칙은 전부 "빠르고 정확하게 끝내기"를 위한 수단이다.
 
 - **YAGNI**: PRD 3.2 확장 범위(소셜 로그인, Redis 캐시, 서버측 Refresh Token 블랙리스트, 관리자 대시보드 등)에 대비한 코드/설정/추상화를 미리 만들지 않는다. 지금 필요한 3개 테이블, 지금 필요한 API만 구현한다.
-- **관심사 분리, 최소 레이어**: PRD 6장 유지보수성 원칙에 따라 라우트-서비스-쿼리(백엔드), UI-상태-서버동기화(프론트) 정도로만 나눈다. 그 이상의 레이어(도메인 모델 클래스, DTO 변환 계층, 리포지토리 인터페이스 추상화 등)는 만들지 않는다.
+- **관심사 분리, 최소 레이어**: PRD 6장 유지보수성 원칙에 따라 라우트-서비스-쿼리(백엔드), UI-상태-서버동기화(프론트) 정도로만 나눈다. 그 이상의 레이어(도메인 모델 클래스, 리포지토리 인터페이스 추상화 등)는 만들지 않는다. 단, DB의 snake_case 컬럼을 API 응답의 camelCase 필드로 바꿔주는 최소한의 `xxxDto.js` 변환 함수(예: `userDto.js`, `categoryDto.js`, `todoDto.js`)는 허용한다 — 클래스나 별도 계층이 아닌 순수 변환 함수 하나로 유지한다.
 - **일관성 > 개인 취향**: 한 번 정한 네이밍/폴더 구조/에러 응답 포맷은 프로젝트 전체에서 동일하게 반복한다. 새 기능을 추가할 때 기존 패턴을 복사해서 쓰는 것이 가장 빠르다.
 - **문서-코드 정합성**: 코드의 엔티티명·필드명·상태값은 도메인 정의서 2장 용어와 반드시 일치시킨다(예: `completed`, `categoryId`, `isDefault`, Role `Member`/`Admin`). 구현 중 도메인 문서와 다르게 갈 수밖에 없다면 코드보다 먼저 문서를 고치지 않는다 — 2일 일정에서는 문서를 다시 쓸 시간이 없으므로, 애초에 문서 용어를 그대로 코드에 옮긴다.
 - **가짜 확장성 금지**: "나중에 마이크로서비스로 쪼갤 수도 있으니" 같은 이유로 미리 서비스 경계를 나누거나 이벤트 버스를 두지 않는다. PRD 4.2가 명시하듯 단일 Express + 단일 PostgreSQL로 시작하고 끝낸다.
@@ -87,7 +87,7 @@
 
 ## 5. 설정/보안/운영 원칙 (PRD 4/6장 기반)
 
-- **환경변수**: `.env`로 관리하고 `.gitignore`에 포함한다. 최소 항목: `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`(예: 15m), `REFRESH_TOKEN_EXPIRES_IN`(예: 7d), `PORT`. `.env.example`을 함께 커밋해 재현 가능하게 한다.
+- **환경변수**: `.env`로 관리하고 `.gitignore`에 포함한다. 최소 항목: `POSTGRES_CONNECTION_STRING`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`(예: 15m), `REFRESH_TOKEN_EXPIRES_IN`(예: 7d), `PORT`, `CORS_ORIGIN`(콤마로 구분된 허용 origin 목록). `.env.example`을 함께 커밋해 재현 가능하게 한다.
 - **비밀번호**: bcrypt로 해시 저장(PRD 4.1, 시나리오 1). 평문 비밀번호는 로그에도 남기지 않는다.
 - **JWT Access/Refresh Token**:
   - Access Token은 단기(예: 15분), API 요청 시 `Authorization: Bearer` 헤더로 전달.
@@ -99,11 +99,13 @@
 - **커넥션 풀**: `pg.Pool` 하나를 앱 시작 시 생성해 재사용, `max: 20` 내외(PRD 4.2). 요청마다 새 커넥션을 만들지 않는다.
 - **인덱스**: `users.email`(UNIQUE), `todos.user_id`, `todos.category_id`에 기본 인덱스만 적용(PRD 4.2) — 그 이상 최적화하지 않는다.
 - **헬스체크**: `GET /health`로 DB 연결 여부만 확인하는 엔드포인트 하나만 둔다. 별도 메트릭 수집기(Prometheus 등)는 도입하지 않는다.
+- **CORS**: 별도 라이브러리(`cors` 패키지) 없이 최소 미들웨어로 처리한다. `CORS_ORIGIN` 환경변수(콤마 구분 다중 origin 허용)에 등록된 origin만 `Access-Control-Allow-Origin`으로 반영하고, Refresh Token 쿠키 전달을 위해 `Access-Control-Allow-Credentials: true`를 함께 설정한다(이 경우 와일드카드 `*` 사용 불가).
+- **API 문서**: 개발환경(`NODE_ENV!=='production'`)에서만 `GET /api-docs`(swagger-ui-express)로 `swagger.json`을 노출한다. 운영환경에서는 등록하지 않는다.
 
 ### 로깅/에러 핸들링 미들웨어
 비즈니스 로직(서비스 계층)이 로깅·에러 응답 형식까지 신경 쓰지 않도록, Express 미들웨어 2개로 관심사를 분리한다. 둘 다 `app.js`에서 라우트 전/후에 각각 등록한다.
 
-- **요청 로거 미들웨어(`requestLogger.js`, 모든 라우트보다 먼저 등록)**: 요청마다 메서드/경로/상태코드/응답시간/(로그인 상태면) `userId`를 한 줄로 콘솔에 출력한다. 비밀번호·토큰 등 민감정보는 로그에 남기지 않는다. 별도 로깅 라이브러리(winston 등) 도입 없이 `console.log` + 응답 완료 시점(`res.on('finish')`) 훅으로 충분히 처리한다(YAGNI, MVP 범위).
+- **요청 로거 미들웨어(`requestLogger.js`, 모든 라우트보다 먼저 등록)**: 요청마다 메서드/경로/상태코드/응답시간/(로그인 상태면) `userId`를 한 줄로 남긴다. 비밀번호·토큰 등 민감정보는 로그에 남기지 않는다. 별도 로깅 라이브러리(winston 등) 도입 없이 `res.on('finish')` 훅으로 로그 라인을 만들고, `NODE_ENV`로 출력 대상만 분기한다: 개발환경(`development`)은 `console.log`, 운영환경(`production`)은 날짜별 로그 파일(`logs/app_YYYY-MM-DD.log`, 자정이 지나면 새 날짜 파일에 append)에 기록한다.
 - **중앙 에러 핸들러 미들웨어(`errorHandler.js`, 모든 라우트 뒤에 마지막으로 등록)**: 라우트/서비스에서 발생한 모든 에러(동기 throw, `next(err)`로 전달된 에러)를 여기서 한 곳으로 모아 처리한다. 개별 라우트/서비스는 `try/catch`로 응답 포맷을 직접 만들지 않고, 의미 있는 에러 객체(`status`, `message` 포함)를 만들어 `throw` 또는 `next(err)`로 위임한다.
   - 표준 에러 응답 포맷: `{ "error": { "message": string, "status": number } }` — 프론트/모든 시나리오 문서(3-user-scenario.md, 3-admin-scenario.md)의 401/403/유효성오류 응답과 형식을 통일한다.
   - 상태코드 매핑: 인증 실패/미인증(도메인 8장) → 401, 권한 없음(소유권 위반, Admin 전용 API 호출) → 403, 입력 유효성 오류(이메일 형식, startDate>endDate, 이메일 중복) → 400, 존재하지 않는 리소스 → 404, 그 외 예기치 못한 에러 → 500(내부 상세 메시지는 응답에 노출하지 않고 서버 로그에만 기록).
@@ -204,6 +206,7 @@ backend/
 │   ├── middlewares/
 │   │   ├── auth.middleware.js   # JWT 검증 → 401
 │   │   ├── admin.middleware.js  # Role=Admin 검증 → 403
+│   │   ├── cors.js              # CORS_ORIGIN 기반 CORS 헤더 설정
 │   │   ├── requestLogger.js     # 요청 단위 로그(메서드/경로/상태코드/응답시간)
 │   │   └── errorHandler.js      # 중앙 에러 핸들러, 표준 에러 응답 포맷 통일
 │   ├── db/
@@ -211,16 +214,25 @@ backend/
 │   ├── migrations/              # 순번 매긴 순수 SQL 마이그레이션
 │   │   ├── 001_create_users.sql
 │   │   ├── 002_create_categories.sql
-│   │   └── 003_create_todos.sql
+│   │   ├── 003_create_todos.sql
+│   │   └── seed.sql
 │   ├── utils/
 │   │   ├── jwt.js               # Access/Refresh 토큰 sign/verify
-│   │   └── todoStatus.js        # 도메인 5장 상태 파생 계산 함수(순수 함수, 단위테스트 대상)
+│   │   ├── todoStatus.js        # 도메인 5장 상태 파생 계산 함수(순수 함수, 단위테스트 대상)
+│   │   ├── userDto.js           # User row(snake_case) → API 응답(camelCase) 변환
+│   │   ├── categoryDto.js       # Category row → API 응답 변환
+│   │   └── todoDto.js           # Todo row → API 응답 변환(status 파생 포함)
 │   ├── app.js                   # Express 앱 조립(라우트/미들웨어 등록)
 │   └── server.js                # 서버 기동, /health 엔드포인트
-├── test/
-│   ├── todoStatus.test.js       # 상태 파생 경계값 테스트
-│   ├── todo.service.test.js     # 소유권/기본카테고리 검증 테스트
-│   └── category.service.test.js # 삭제 시 재할당 테스트
+├── test/                        # Task ID 기준 파일명(node:test, node --test로 자동탐색)
+│   ├── be1-scaffold.test.js
+│   ├── be3-middlewares.test.js
+│   ├── be4-auth.test.js
+│   ├── be5-auth-middleware.test.js
+│   ├── be6-user.test.js
+│   ├── be7-category.test.js
+│   ├── be8-todo.test.js
+│   └── todoStatus.test.js
 ├── .env.example
 └── package.json
 ```

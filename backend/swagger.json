@@ -27,14 +27,27 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "status": { "type": "string", "example": "ok" } }
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "db": { "type": "string", "example": "connected" }
+                  }
                 }
               }
             }
           },
-          "500": {
+          "503": {
             "description": "DB 연결 실패",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "error" },
+                    "db": { "type": "string", "example": "disconnected" }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -269,7 +282,7 @@
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Category" } } }
           },
           "400": {
-            "description": "요청 형식 오류",
+            "description": "요청 형식 오류, 또는 기본(isDefault=true) 카테고리 수정 시도(수정 불가)",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
           },
           "401": {
@@ -302,6 +315,10 @@
                 "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "카테고리가 삭제되었습니다." } } }
               }
             }
+          },
+          "400": {
+            "description": "기본(isDefault=true) 카테고리 삭제 시도(삭제 불가)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
           },
           "401": {
             "description": "미인증",

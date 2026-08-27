@@ -6,6 +6,7 @@
 | 1.0 | 최초 작성: 전체 시스템 아키텍처, 요청 처리 흐름 다이어그램 | 2-prd.md, 5-project-principle.md | 2026-08-26 |
 | 1.1 | 인증 요청 시퀀스 다이어그램 추가(로그인, Access Token 만료 시 재발급, 로그아웃) | 3-user-scenario.md 시나리오2·3·4 | 2026-08-26 |
 | 1.2 | 다이어그램 내 DB 라벨을 "PostgreSQL"에서 "PostgreSQL 17"로 통일 | 기술스택 일관성 검토 결과 | 2026-08-26 |
+| 1.3 | 요청 처리 흐름 다이어그램에 cors 미들웨어 단계 추가(express.json() 이전) | 백엔드 구현 결과와 문서 정합성 검토 | 2026-08-27 |
 
 ## 문서 개요
 1인 개발/2일 일정, 단일 Express 서버 + 단일 PostgreSQL 인스턴스(마이크로서비스 없음) 제약을 그대로 반영한 최소 구조의 아키텍처 다이어그램이다. 상세 레이어/네이밍은 `5-project-principle.md`를 따른다.
@@ -42,7 +43,8 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["Client 요청"] --> B["express.json()"]
+    A["Client 요청"] --> Z["cors\n(CORS_ORIGIN 검증, 허용 시 Allow-Origin/Allow-Credentials 설정)"]
+    Z --> B["express.json()"]
     B --> C["requestLogger\n(메서드/경로/상태코드/응답시간 로깅)"]
     C --> D["auth.middleware\n(JWT 검증, 실패 시 401)"]
     D --> E{"Admin 전용 라우트?"}
