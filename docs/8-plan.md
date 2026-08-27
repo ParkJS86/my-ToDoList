@@ -8,6 +8,10 @@
 | 1.2 | DB-2 수행 완료: `my_todolist` DB 생성, 마이그레이션 3개 파일 적용, `backend/.env` 접속 문자열을 `my_todolist`로 갱신, 완료 항목 🟢 표시 | DB-2 실행 결과 | 2026-08-26 |
 | 1.3 | DB-3 수행 완료: `backend/src/migrations/seed.sql` 작성(pgcrypto bcrypt 해시, ON CONFLICT DO NOTHING), Admin 계정 1건·기본 Category 1건 생성 및 재실행 idempotency 확인, 완료 항목 🟢 표시 | DB-3 실행 결과 | 2026-08-26 |
 | 1.4 | BE-1 수행 완료: package.json/디렉토리 뼈대/.env.example 생성, npm install 성공, 검증 테스트 27건 작성 및 전체 통과(node --test 자동탐색 방식으로 test 스크립트 수정), 완료 항목 🟢 표시 | BE-1 실행 결과 | 2026-08-26 |
+| 1.5 | BE-2 수행 완료: `db/pool.js`(pg.Pool) 생성, `GET /health`(SELECT 1 확인) 구현, 정상/DB장애 양쪽 응답 확인, 완료 항목 🟢 표시 | BE-2 실행 결과 | 2026-08-27 |
+| 1.6 | BE-3 로그 방식 변경: 개발환경 콘솔 / 운영환경 파일(logs/app_YYYY-MM-DD.log, 날짜별) 분기로 수정 | 사용자 요청 | 2026-08-27 |
+| 1.7 | BE-3 수행 완료: `middlewares/requestLogger.js`, `middlewares/errorHandler.js` 구현, `app.js`에 express.json → requestLogger → routes → 404 catch-all → errorHandler 순서 등록, 검증 테스트 11건 작성 및 기존 27건 포함 전체 38건 통과, 완료 항목 🟢 표시 | BE-3 실행 결과 | 2026-08-27 |
+| 1.8 | BE-4 수행 완료: `utils/jwt.js`, `queries/user.queries.js`, `services/auth.service.js`, `routes/auth.routes.js` 구현(signup/login/refresh/logout), 쿠키 파싱은 직접 구현(cookie-parser 미도입), 검증 테스트 신규 작성 및 기존 포함 전체 53건 통과, 완료 항목 🟢 표시 | BE-4 실행 결과 | 2026-08-27 |
 
 ## 문서 개요
 - 목적: docs 1~7번 문서(도메인정의서/PRD/시나리오/와이어프레임/프로젝트원칙/아키텍처/ERD)와 `schema.sql`을 기준으로, 실제 구현 순서를 DB → Backend → Frontend 단위의 독립적인 Task로 분할한다.
@@ -57,27 +61,28 @@
 ### BE-2. DB 커넥션 풀 및 헬스체크
 - **수행 작업**: `db/pool.js`에 `pg.Pool`(max 20 내외) 단일 인스턴스 생성. `GET /health`에서 `SELECT 1`로 DB 연결 확인 후 응답하는 엔드포인트 구현.
 - **완료 조건**
-  - [ ] 서버 기동 후 `GET /health` 호출 시 200과 함께 DB 연결 정상 여부가 응답된다.
-  - [ ] DB 연결 실패 시 `/health`가 5xx를 반환한다(수동으로 DB 중단 후 확인).
+  - 🟢 서버 기동 후 `GET /health` 호출 시 200과 함께 DB 연결 정상 여부가 응답된다.
+  - 🟢 DB 연결 실패 시 `/health`가 5xx를 반환한다(수동으로 DB 중단 후 확인).
 - **선행 Task**: BE-1, DB-2.
 
 ### BE-3. 공통 미들웨어(로깅/에러 핸들링) 구현
-- **수행 작업**: `middlewares/requestLogger.js`(메서드/경로/상태코드/응답시간/userId 로그), `middlewares/errorHandler.js`(표준 에러 응답 `{error:{message, status}}`, 401/403/400/404/500 매핑) 구현 및 `app.js`에 `express.json() → requestLogger → routes → errorHandler` 순서로 등록.
+- **수행 작업**: `middlewares/requestLogger.js`(메서드/경로/상태코드/응답시간/userId 로그), `middlewares/errorHandler.js`(표준 에러 응답 `{error:{message, status}}`, 401/403/400/404/500 매핑) 구현 및 `app.js`에 `express.json() → requestLogger → routes → errorHandler` 순서로 등록. 로그 출력 대상은 `NODE_ENV`로 분기: 개발환경(`development`)에서는 콘솔에 출력하고, 운영환경(`production`)에서는 파일시스템의 날짜별 로그 파일(`logs/app_YYYY-MM-DD.log`, 당일 날짜 기준 자정 이후 요청부터는 새 날짜 파일에 기록)에 append 방식으로 기록한다.
 - **완료 조건**
-  - [ ] 임의의 라우트에서 `next(err)` 또는 `throw`한 에러가 `errorHandler`를 거쳐 `{error:{message, status}}` 형식으로 응답된다.
-  - [ ] 모든 요청에 대해 콘솔에 `메서드/경로/상태코드/응답시간` 로그가 한 줄씩 출력된다.
-  - [ ] 비밀번호/토큰 값이 로그에 출력되지 않는다.
+  - 🟢 임의의 라우트에서 `next(err)` 또는 `throw`한 에러가 `errorHandler`를 거쳐 `{error:{message, status}}` 형식으로 응답된다.
+  - 🟢 개발환경(`NODE_ENV=development`)에서 모든 요청에 대해 콘솔에 `메서드/경로/상태코드/응답시간` 로그가 한 줄씩 출력된다.
+  - 🟢 운영환경(`NODE_ENV=production`)에서 동일한 로그가 콘솔 대신 당일 날짜의 `logs/app_YYYY-MM-DD.log` 파일에 한 줄씩 append된다.
+  - 🟢 비밀번호/토큰 값이 로그에 출력되지 않는다.
 - **선행 Task**: BE-1.
 
 ### BE-4. 인증 API (회원가입/로그인/토큰재발급/로그아웃)
 - **수행 작업**: `utils/jwt.js`(Access/Refresh 서명·검증), `auth.service.js`(bcrypt 해시/검증, 토큰 발급), `auth.routes.js`(`POST /auth/signup`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`) 구현. 이메일 형식 검증 + `users.email` UNIQUE 기반 중복 체크(3-user-scenario.md 시나리오1~4).
 - **완료 조건**
-  - [ ] 이메일 형식이 아닌 값으로 회원가입 시 400 응답.
-  - [ ] 중복 이메일로 회원가입 시 400(또는 409) 응답, `users`에 중복 저장되지 않는다.
-  - [ ] 정상 회원가입 후 해당 계정으로 로그인 시 Access Token(응답 바디) + Refresh Token(Set-Cookie, httpOnly)이 발급된다.
-  - [ ] 잘못된 비밀번호로 로그인 시 401, 계정 존재 여부가 응답 메시지에 노출되지 않는다.
-  - [ ] 만료된 Access Token으로 API 호출 시 401, 이후 `POST /auth/refresh`로 새 Access Token 발급이 확인된다.
-  - [ ] `POST /auth/logout` 호출 시 Refresh Token 쿠키가 만료 처리된다.
+  - 🟢 이메일 형식이 아닌 값으로 회원가입 시 400 응답.
+  - 🟢 중복 이메일로 회원가입 시 400(또는 409) 응답, `users`에 중복 저장되지 않는다.
+  - 🟢 정상 회원가입 후 해당 계정으로 로그인 시 Access Token(응답 바디) + Refresh Token(Set-Cookie, httpOnly)이 발급된다.
+  - 🟢 잘못된 비밀번호로 로그인 시 401, 계정 존재 여부가 응답 메시지에 노출되지 않는다.
+  - 🟢 만료된 Access Token으로 API 호출 시 401, 이후 `POST /auth/refresh`로 새 Access Token 발급이 확인된다(BE-5 보호 라우트가 아직 없어 `utils/jwt.js`의 `verifyAccessToken` 단위 테스트로 만료 시 예외 발생 확인, refresh 흐름은 통합 테스트로 확인).
+  - 🟢 `POST /auth/logout` 호출 시 Refresh Token 쿠키가 만료 처리된다.
 - **선행 Task**: BE-2, BE-3, DB-3.
 
 ### BE-5. 인증/인가 미들웨어
