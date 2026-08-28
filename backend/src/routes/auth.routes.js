@@ -66,8 +66,8 @@ router.post('/login', async (req, res, next) => {
 router.post('/refresh', async (req, res, next) => {
   try {
     const { refreshToken } = parseCookies(req);
-    const accessToken = await authService.refresh(refreshToken);
-    res.status(200).json({ accessToken });
+    const { accessToken, user } = await authService.refresh(refreshToken);
+    res.status(200).json({ accessToken, user });
   } catch (err) {
     next(err);
   }

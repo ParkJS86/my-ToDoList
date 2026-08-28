@@ -18,6 +18,7 @@
 | 아키텍처 다이어그램 | `docs/6-arch.md` | mermaid로 그린 전체 시스템 아키텍처(단일 Express+단일 PostgreSQL), 요청 처리 흐름(미들웨어 포함), 인증 요청 시퀀스(로그인/재발급/로그아웃) 다이어그램 |
 | ERD | `docs/7-erd.md` | mermaid erDiagram으로 그린 users/categories/todos 테이블 구조(PK: user_id/category_id/todo_id, 생성자·수정자 포함)와 테이블별 핵심 제약사항 |
 | 실행 계획(WBS) | `docs/8-plan.md` | DB/Backend/Frontend 단위로 분할한 Task 목록(각 Task별 수행작업, 체크박스 완료조건, 선행 Task) |
+| 스타일 가이드 | `docs/9-style.md` | 레퍼런스 이미지 기반 컬러 팔레트/타이포그래피/여백/모서리·그림자·글로우/컴포넌트별(Button·Input·Modal·Card·NavBar) 스타일과 4-wireframe.md 8개 화면 적용 매핑을 정의한 프론트엔드 스타일 가이드 |
 | DB 스키마 DDL | `docs/schema.sql` | ERD 기반 PostgreSQL 17 `CREATE TABLE` DDL(users/categories/todos), 기본 카테고리 유일성 제약, 인덱스 포함 |
 | API 명세 | `backend/swagger.json` | 인증/User/Category/Todo/헬스체크 15개 엔드포인트에 대한 OpenAPI 3.0 스펙(요청·응답 스키마, JWT Bearer 인증, 에러 응답 포맷) |
 

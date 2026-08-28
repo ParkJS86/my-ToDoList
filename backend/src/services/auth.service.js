@@ -59,7 +59,8 @@ async function refresh(refreshToken) {
     e.status = 401;
     throw e;
   }
-  return signAccessToken({ userId: row.user_id, role: row.role });
+  const accessToken = signAccessToken({ userId: row.user_id, role: row.role });
+  return { accessToken, user: toUserDto(row) };
 }
 
 module.exports = { signup, login, refresh };

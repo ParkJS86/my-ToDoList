@@ -1,0 +1,45 @@
+.admin-user-list-page {
+  padding: var(--space-3);
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th, .user-table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.user-card-list {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.user-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-3);
+}
+
+.user-card-email {
+  font-weight: 600;
+}
+
+.user-card-meta {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  margin: var(--space-1) 0;
+}
+
+@media (max-width: 768px) {
+  .user-table { display: none; }
+  .user-card-list { display: flex; }
+}

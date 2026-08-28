@@ -122,7 +122,8 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "accessToken": { "type": "string", "description": "새로 발급된 JWT Access Token" }
+                    "accessToken": { "type": "string", "description": "새로 발급된 JWT Access Token" },
+                    "user": { "$ref": "#/components/schemas/User" }
                   }
                 }
               }
