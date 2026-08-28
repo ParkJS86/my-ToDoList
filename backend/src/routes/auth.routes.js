@@ -54,6 +54,7 @@ router.post('/login', async (req, res, next) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
@@ -74,7 +75,11 @@ router.post('/refresh', async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('refreshToken', { path: '/' });
+  res.clearCookie('refreshToken', {
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  });
   res.status(200).json({ message: '로그아웃되었습니다.' });
 });
 
