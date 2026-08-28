@@ -51,6 +51,12 @@
   color: var(--color-danger);
 }
 
+.navbar-user {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
 .navbar-theme-toggle {
   background: none;
   border: none;

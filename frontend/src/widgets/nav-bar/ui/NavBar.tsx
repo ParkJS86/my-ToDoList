@@ -49,6 +49,7 @@ export function NavBar() {
           로그아웃
         </button>
       </div>
+      {currentUser && <span className="navbar-user">{currentUser.email}님</span>}
       <button
         className="navbar-theme-toggle"
         onClick={() => setTheme(toggleTheme())}

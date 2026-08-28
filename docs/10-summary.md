@@ -84,6 +84,9 @@
 | 69 | 2026-08-28 | Frontend | 테스트 | 배포 프론트엔드 대상 브라우저 E2E 재실시 — 회원 시나리오 1~10, 관리자 시나리오 1~3 전체 정상 확인 |
 | 70 | 2026-08-28 | Infra | 환경설정 | `.gitignore`에 `.playwright-mcp/`(테스트 산출물) 추가 |
 | 71 | 2026-08-28 | Infra | 배포 | Vercel 배포 상태 최종 재확인(백엔드 health 200, 프론트 SPA 라우팅 200, 쿠키 SameSite=None 적용) |
+| 72 | 2026-08-28 | Docs | 문서 | `docs/10-summary.md` 신규 작성(1~71번 항목, 프로젝트 진행 히스토리 최초 정리) |
+| 73 | 2026-08-28 | Infra | 환경설정 | `backend/vercel.json`, `frontend/vercel.json`에 `git.deploymentEnabled:false` 추가(Vercel git 자동배포 비활성화, 수동/CI 배포로 전환) |
+| 74 | 2026-08-28 | Infra | 환경설정 | `.github/workflows/backend-prod.yaml`, `frontend-prod.yaml` 추가(GitHub Actions 기반 배포 워크플로) |
 
 ---
 
@@ -92,4 +95,4 @@
 - **Backend**: 인증(JWT Access/Refresh)·User·Category·Todo API 전체 구현(BE-1~9), 배포 후 발견된 쿠키 SameSite/서버리스 진입점 문제 수정
 - **Frontend**: FSD 구조 기반 회원가입/로그인/Todo CRUD/필터/관리자 화면 전체 구현(FE-1~14), 다크·라이트 테마 토글, 배포 후 발견된 SPA 라우팅 문제 수정
 - **Docs**: 도메인정의서~실행계획까지 전체 설계 문서 작성, 구현 결과에 맞춘 지속적 정합성 갱신
-- **Infra**: Vercel(백엔드 서버리스 + 프론트엔드 정적 사이트) 배포 구성 및 배포 후 발견된 이슈 3건(서버리스 진입점, SPA 라우팅, 크로스사이트 쿠키) 해결
+- **Infra**: Vercel(백엔드 서버리스 + 프론트엔드 정적 사이트) 배포 구성, 배포 후 발견된 이슈 3건(서버리스 진입점, SPA 라우팅, 크로스사이트 쿠키) 해결, git 자동배포 비활성화 후 GitHub Actions 배포 워크플로로 전환
